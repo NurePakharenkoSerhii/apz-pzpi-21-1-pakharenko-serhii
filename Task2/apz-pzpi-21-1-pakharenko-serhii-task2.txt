@@ -1,0 +1,246 @@
+1 МОДЕЛЮВАННЯ ПРОГРАМНОЇ СИСТЕМИ
+
+
+Користувачами системи «Guardic» є 3 типи акторів: клієнт (звичайний користувач), адмінітратор (охоронець) та пристрій. Звичайні користувачі та адміни взаємодіють з веб-частиною, мобільним додатком, а також IOT пристроєм. З цієї причини було створено UML діаграму прецедентів (див. додаток А. рис. А.1).
+Веб-додаток допомагає користувачу та адміністраторам отримати доступ до такого функціоналу як авторизація та автентифікація, перегляд інформації в залежності від типу користувача. Також усі клієнти мають можливість взаємодіяти з системою в залежності від предметної області, яка їм доступна.
+Мобільний додаток дає можливість звичайним користувачам та охоронцям взаємодіяти з системою, не маючи при собі інших пристроїв, окрім мобільного телефону. Таким чином, для роботи з системою не є життєво необхідним наявність персонального комп'ютера або ноутбука.
+IoT-прилад буде допомагати користувачам отримувати обладнання та необхідні речі автоматично, визначати терміни та інші деталі, що стосуються видачі обладнання.
+ 
+2 ПРОЄКТУВАННЯ БАЗИ ДАНИХ
+
+
+Задля проектування бази даних заздалегідь було розроблено ER-діаграму (див. рис. 2.1). Вона складається з 7 таблиць: призначення речей (Assignments), охоронці (Guards), користувачі (Users), сповіщення (Notifications), розпорядження (Orders), логи розпоряджень (OrderLogs), речі для видачі (Things).
+ 
+Рисунок 2.1 – ER-діаграма проєкту
+Дана база даних містить такі зв’язки між сутностями:
+	Користувач – Призначення речей (1:М, один користувач може мати багато призначень речей);
+	Охоронець – Призначення речей (1:М, один охоронець може мати багато призначень речей);
+	Охоронець – Повідомлення (1:М, один охоронець може мати багато повідомлень).
+	Користувач – Розпорядження (M:М, багато користувачів може мати багато розпоряджень);
+	Розпорядження – Річ (1:М, одне розпорядження може мати багато речей);
+	Розпорядження – Призначення речей (1:М, одне розпорядження може мати багато призначень речей);
+
+Для програмної системи було обрано СКБД DataGrip та базу даних PostgreSQL. Задля підключення до бази даних було визначено та записано строку для під’єднання до бази даних, яку містить файл appsettings.json.
+ 
+3 ТЕХНОЛОГІЇ ТА АРХІТЕКТУРНІ РІШЕННЯ
+
+
+Задля розробки серверної частини даної системи обрав об'єктно-орієнтовну мову програмування C#, а також було використано технологію ASP.NET Core Web API. Дані технології дають змогу розробляти програми швидко та ефективно.
+У даній системі PostgreSQL використовується як база даних, а серверні програми отримують доступ до бази даних за допомогою технології Entity Framework Core. Дану бібліотеку можна вважати зручною та сучасною, через те що вона забезпечує взаємодію з базою даних за допомогою об'єктно-орієнтованого підходу.
+Надалі наведено діаграму розгортання, щоб більш детально зобразити використані технології серверної частини у даному проекті (див. рис. 3.1).
+У системі було використано API контроллери для маршрутизації запитів. Контролери розбивають програму на логічні компоненти, де кожен несе відповідальність за обробку конкретних типів запитів, а також дій користувача. Це дозволяє зробити написання та тестування коду простим, а також швидко знаходити потрібні елементи програми.
+З метою демонстрації та тестування API було використано такі інструменти як Postman та Swagger. Вони надають можливість для перегляду та тестування API, що значно покращує зручність розробки. Протокол HTTPS, забезпечує безпеку даних під час їх передачі, що робить захист даних та конфіденційність важливою складовою.
+ 
+Рисунок 3.1 – Діаграма розгортання для системи «Guardic»
+
+Принцип REST API було використано для передачі та обміну даних.
+У програмі присутнє хешування паролів. Також використовується модифікатор хеш-функції «сіль», який дозволяє різним користувачам з однаковими паролями мати різний хеш. Для генерації токенів було використано JWT (JSON Web Token). JWT надає можливість керувати доступом до програми лише авторизованим користувачам, а також забезпечує конфіденційність даних. 
+Архітектуру серверного застосунку зобрежено на діаграмі пакетів (див. додаток Б рис. Б.1).
+ 
+4 СПЕЦИФІКАЦІЯ REST
+
+
+У цьому проєкті було використано REST API. Він містить 35 ендпоінтiв. Далі, у таблиці 1, детально наведено специфікацію кожного з 35 ендпоінтів. Ендпоінти несуть відповідальність за виконання бізнес логіки, а також вони надають користувачеві доступ до перегляду даних.
+	Таблиця 1 – Специфікація REST
+Назва	Метод	Шлях
+GetMyAssignments	GET	/api/assignment/my
+GetAssignmentById	GET	/api/assignment/my/{assignmentId}
+UpdateAssignmentById	PUT	/api/assignment/my/{assignmentId}
+DeleteAssignmentById	DELETE	/api/assignment/my/{assignmentId}
+CreateAssignment	POST	/api/assignment
+VerifyAssignment	POST	/api/assignment/verify
+GetThings	GET	/api/Thing
+CreateThing	POST	/api/Thing
+TakeThingsByUserId	POST	/api/Thing/takeThings/{userId}
+GetThingById	GET	/api/Thing/{thingId}
+UpdateThingById	PUT	/api/Thing/{thingId}
+DeleteThingById	DELETE	/api/Thing/{thingId}
+GetUsers	GET	/api/User
+GetUserById	GET	/api/User/{id}
+CreateUser	POST	/api/User
+LoginUser	POST	/api/User/Login
+SignUpUser	POST	/api/User/Signup
+UpdateUserById	PUT	/api/User/{id}
+DeleteUserById	DELETE	/api/User/{id}
+GetOrders	GET	/api/order
+GetOrderById	GET	/api/order/{thingId}
+CreateOrder	POST	/api/order
+UpdateOrderById	PUT	/api/order/{thingId}
+DeleteOrderById	DELETE	/api/order/{thingId}
+GetNotifications	GET	/api/notification
+GetNotificationById	GET	/api/notification/{notificationId}
+UpdateNotificationById	PUT	/api/notification/{notificationId}
+DeleteNotificationById	DELETE	/api/notification/{notificationId}
+ReadNotificationById	POST	/api/notification/ReadNotification/{notificationId}
+CreateGuard	POST	/api/Guard
+GetGuards	GET	/api/Guard
+UpdateGuardById	PUT	/api/Guard/{Id}
+GetGuardById	GET	/api/Guard/{Id}
+SignUpGuard	POST	/api/Guard/SignUp
+LoginGuard	POST	/api/Guard/Login
+
+ 
+ВИСНОВКИ
+
+
+Протягом виконання лабораторної роботи були набуті, а також закріплені навички розробки та проектування серверної частини програмної системи. Також було набуто навичок розробки та проектування бази даних та створення відповідних діаграм. Під час виконання лабораторної роботи було розроблено програмну реалізацію серверної частини системи. Для цього було використано мову програмування C#, базу даних PostgreSQL, технології EF Core, ASP.NET Core Web API, JWT.
+ 
+ПЕРЕЛІК ДЖЕРЕЛ ПОСИЛАНЬ
+	
+1.	Посилання на відеозапис демонстрації роботи серверної частини: https://youtu.be/ZBS99VtaogQ
+2.	Посилання на репозиторій з кодом проекту: https://github.com/NurePakharenkoSerhii/apz-pzpi-21-1-pakharenko-serhii/tree/dev/Task2
+ 
+ДОДАТОК А
+
+Use Case Діаграма
+ 
+Рисунок А.1 – Use Case діаграма програмної системи «Guardic»
+ 
+ДОДАТОК Б
+
+Діаграма пакетів
+ 
+Рисунок Б.1 – Діаграма пакетів програмної системи «Guardic»
+
+
+
+ДОДАТОК В
+
+Файл GuardService.cs
+1.	using API.Core.Contexts;
+2.	using API.Core.DTOs.Guard;
+3.	using API.Core.Entities;
+4.	using API.Services.Abstractions;
+5.	using API.Utils;
+6.	using Microsoft.EntityFrameworkCore;
+7.	
+8.	namespace API.Services.Implementations;
+9.	public class GuardService(GuardicDbContext context) :
+10.	IGuardService
+11.	{
+12.	public async Task<IEnumerable<Guard>>
+13.	GetGuardsAsync()
+14.	{
+15.	
+16.	   return await context.Guards.ToListAsync();
+17.	}
+18.	    
+19.	public async Task<Guard?> GetGuardAsync(int id) 
+20.	{  
+21.	    return await context.Guards.FindAsync(id);  
+22.	 }
+23.	public async Task CreateGuardAsync(CreateGuardDto guard)
+24.	{       
+25.	if (guard == null)      
+26.	  {     
+27.	       throw new ArgumentException(nameof(guard));     
+28.	   }             
+29.	   var (hashedPassword, salt) = 
+30.	PasswordHelper.HashPassword(guard.Password);             
+31.	   await context.Guards.AddAsync(new Guard     
+32.	   {     
+33.	       Email = guard.Email,     
+34.	       Password = hashedPassword,     
+35.	       Salt = salt,      
+36.	       Name= guard.Name,     
+37.	       Department = guard.Department     
+38.	   });             
+39.	   await context.SaveChangesAsync();   
+40.	}
+41.	    
+42.	public async Task UpdateGuardAsync(int id, 
+43.	UpdateGuardDto guard)    
+44.	{     
+45.	   if (guard == null) 
+46.	       {   
+47.	         throw new ArgumentException(nameof(guard));  
+48.	      }
+49.	        var guardDb = await context.FindAsync<Guard>(id);           
+50.	   if (guardDb == null)   
+51.	     {    
+52.	        throw new ArgumentException(nameof(guard));     
+53.	   }   
+54.	     guardDb.Email = guard.Email;   
+55.	     guardDb.Name = guard.Name;   
+56.	     guardDb.Department = guard.Department;        
+57.	  
+58.	    var (hashedPassword, salt) = PasswordHelper.HashPassword(guard.Password);
+59.	 
+60.	       guardDb.Password = hashedPassword; 
+61.	       guardDb.Salt = salt;
+62.	        
+63.	        context.Guards.Update(guardDb);         
+64.	       await context.SaveChangesAsync(); 
+65.	   }
+66.	    public async Task<Guard?> LogInAsync(string email, string password)
+67.	    {     
+68.	   var guard = await 
+69.	context.Guards.FirstOrDefaultAsync(u => u.Email == email);
+70.	        if (guard != null && PasswordHelper.IsPasswordValid(password, guard.Password, guard.Salt))       
+71.	 {   
+72.	         return guard;   
+73.	     } 
+74.	       return null;  
+75.	  }
+76.	    public async Task<bool> SignUpAsync(GuardSignUpDto guardSignUpDto)
+77.	    {
+78.	        var existingGuard = await context.Users.FirstOrDefaultAsync(u => u.Email == guardSignUpDto.Email);
+79.	
+80.	        if (existingGuard != null)
+81.	        {
+82.	            return false;
+83.	        }        
+84.	        var (hashedPassword, salt) = PasswordHelper.HashPassword(guardSignUpDto.Password);
+85.	        
+86.	        var newGuard = new Guard
+87.	        { 
+88.	           Email = guardSignUpDto.Email, 
+89.	           Password = hashedPassword,
+90.	            Salt = salt, 
+91.	           Name = guardSignUpDto.Name,
+92.	            Department = guardSignUpDto.Department
+93.	        };
+94.	        context.Guards.Add(newGuard);
+95.	        await context.SaveChangesAsync();
+96.	
+97.	        return true;
+98.	    }
+99.	}
+
+ 
+ДОДАТОК Г
+
+Файл JwtService.cs
+1.	using System.IdentityModel.Tokens.Jwt;
+2.	using System.Security.Claims;
+3.	using System.Text;
+4.	using API.Core.Constants;
+5.	using API.Services.Abstractions;
+6.	using Microsoft.IdentityModel.Tokens;
+7.	
+8.	namespace API.Services.Implementations;
+9.	
+10.	public class JwtService(IConfiguration configuration) : IJwtService
+11.	{
+12.	public IConfiguration Configuration { get; set; } = configuration;
+13.	
+14.	    public string GenerateToken(int userId, Role role)
+15.	    {
+16.	       var claims = new List<Claim>
+17.	        {
+            new(ClaimTypes.NameIdentifier, userId.ToString()),
+18.	           new(ClaimTypes.Role, role.ToString())
+19.	        };
+20.	        var key = new 
+21.	SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetSection("Authorization:JWT:Secret").Value));
+22.	        var credentials = new 
+23.	SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+24.	       var token = new JwtSecurityToken(
+25.	            claims: claims,
+26.	            expires: DateTime.Now.AddDays(1),
+27.	            signingCredentials: credentials);
+28.	
+29.	        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+30.	        return jwt;
+31.	  }
+32. }
